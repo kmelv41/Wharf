@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "1058477326442",
+    "firebase_url": "https://find-a-wharf.firebaseio.com",
+    "project_id": "find-a-wharf",
+    "storage_bucket": "find-a-wharf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058477326442:android:d6f5c781f67245fa",
+        "android_client_info": {
+          "package_name": "com.findawharf.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1058477326442-2ju9dghrm34qjc5l93o5tmmj6p4t4q5l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.findawharf.android",
+            "certificate_hash": "D80E14C900494F0A6B9C10A42AD84E46166B91B1"
+          }
+        },
+        {
+          "client_id": "1058477326442-6hn31a42l44j8p37s13ng55bnv5ope7s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBYmWs9mDBtafImz107_sfBtQmjfRMSv4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1058477326442-pjq2v3if5i17vgj5e6am8m7idanicqal.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.findawharf"
+              }
+            },
+            {
+              "client_id": "1058477326442-6hn31a42l44j8p37s13ng55bnv5ope7s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
