@@ -25,7 +25,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -127,10 +129,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.i(TAG,"Value is: " + postSnapshot);
                 }
 
+                for (HashMap<String,String> v : venues) {
 
-                //ArrayList value;
-                //value = dataSnapshot.getValue(ArrayList.class);
-                //Log.i(TAG, "Value is: " + value);
+                    String name = v.get("Name");
+                    String address = v.get("Address");
+                    String city = v.get("City");
+                    String category = v.get("Category");
+                    Double latitude = Double.parseDouble(v.get("Latitude"));
+                    Double longitude = Double.parseDouble(v.get("Longitude"));
+                    String machine = v.get("Machine");
+
+                    Log.i(TAG,"Name is " + name + ", Latitude is " + latitude + ", Longitude is " + longitude);
+
+                    MarkerOptions venueMarker = new MarkerOptions()
+                            .position(new LatLng(latitude,longitude))
+                            .title(name)
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.hotel_marker));
+
+                    mMap.addMarker(venueMarker);
+
+                }
+
                 Log.i(TAG, "Firebase Connected");
             }
 
