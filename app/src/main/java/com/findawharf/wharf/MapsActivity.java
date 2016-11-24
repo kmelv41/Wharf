@@ -10,6 +10,11 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -112,9 +117,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                ArrayList value;
-                value = dataSnapshot.getValue(ArrayList.class);
-                Log.i(TAG, "Value is: " + value);
+                List<HashMap<String,String>> venues = new ArrayList<HashMap<String,String>>();
+                int i = 0;
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    //Typecasting java.util.Object as Collection<Map<String,String>>
+                    HashMap<String,String> thisVenue = (HashMap<String,String>) postSnapshot.getValue();
+                    venues.add(i,thisVenue);
+                    i++;
+                    Log.i(TAG,"Value is: " + postSnapshot);
+                }
+
+
+                //ArrayList value;
+                //value = dataSnapshot.getValue(ArrayList.class);
+                //Log.i(TAG, "Value is: " + value);
                 Log.i(TAG, "Firebase Connected");
             }
 
