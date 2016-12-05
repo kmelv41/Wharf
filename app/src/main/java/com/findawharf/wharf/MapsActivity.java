@@ -61,6 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng mLastLatLng;
     LocationRequest mLocationRequest = new LocationRequest();
     private GoogleApiClient mGoogleApiClient;
+    private MarkerOptions mLocMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,10 +155,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     Log.i(TAG, "Name is " + name + ", Latitude is " + latitude + ", Longitude is " + longitude);
 
+                    String catImage;
+                    switch (category) {
+                        case "Bar":  catImage = "beer";
+                            break;
+                        case "Cafe":  catImage = "cafe";
+                            break;
+                        case "Casino":  catImage = "casino";
+                            break;
+                        case "Hotel":  catImage = "hotel";
+                            break;
+                        case "Restaurant":  catImage = "restaurant";
+                            break;
+                        case "Transit":  catImage = "transit";
+                            break;
+                        default: catImage = "hotel";
+                            break;
+                    }
+
                     MarkerOptions venueMarker = new MarkerOptions()
                             .position(new LatLng(latitude, longitude))
                             .title(name)
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.hotel_marker));
+                            .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier(catImage, "drawable", getPackageName())));
 
                     mMap.addMarker(venueMarker);
 
@@ -193,19 +212,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mGoogleApiClient);
             if (mLastLocation != null) {
                 mLastLatLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                MarkerOptions venueMarker = new MarkerOptions()
+                mLocMarker = new MarkerOptions()
                         .position(mLastLatLng)
                         .title("Current Location")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
 
-                mMap.addMarker(venueMarker);
-
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mLastLatLng, 13));
+                mMap.addMarker(mLocMarker);
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(mLastLatLng)      // Sets the center of the map to location user
                         .zoom(17)                   // Sets the zoom
-                        .bearing(0)                // Sets the orientation of the camera to east
+                        .bearing(0)                // Sets the orientation of the camera to north
                         .tilt(40)                   // Sets the tilt of the camera to 30 degrees
                         .build();                   // Creates a CameraPosition from the builder
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
