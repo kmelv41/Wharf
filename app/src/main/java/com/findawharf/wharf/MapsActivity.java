@@ -13,6 +13,8 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -145,8 +147,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 for (HashMap<String, String> v : venues) {
 
-                    String name = v.get("Name");
-                    String address = v.get("Address");
+                    final String name = v.get("Name");
+                    final String address = v.get("Address");
                     String city = v.get("City");
                     String category = v.get("Category");
                     Double latitude = Double.parseDouble(v.get("Latitude"));
@@ -179,6 +181,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier(catImage, "drawable", getPackageName())));
 
                     mMap.addMarker(venueMarker);
+
+                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                        @Override
+                        public View getInfoWindow(Marker arg0) {
+                            return null;
+                        }
+
+                        @Override
+                        public View getInfoContents (Marker marker) {
+                            View v = getLayoutInflater().inflate(R.layout.info_window, null);
+                            TextView venueName = (TextView) v.findViewById(R.id.venue_name);
+                            TextView venueAddress = (TextView) v.findViewById(R.id.venue_address);
+                            TextView venueDistance = (TextView) v.findViewById(R.id.venue_distance);
+                            TextView venueAppleStock = (TextView) v.findViewById(R.id.venue_apple_stock);
+                            TextView venueUSBStock = (TextView) v.findViewById(R.id.venue_usb_stock);
+
+                            venueName.setText(marker.getTitle());
+                            venueAddress.setText(address);
+                            venueDistance.setText("?? km");
+                            venueAppleStock.setText("3");
+                            venueUSBStock.setText("2");
+
+                            return v;
+                        }
+
+                    });
 
                 }
 
