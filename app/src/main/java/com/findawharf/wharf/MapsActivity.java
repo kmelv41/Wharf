@@ -13,8 +13,11 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -62,6 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationRequest mLocationRequest = new LocationRequest();
     private GoogleApiClient mGoogleApiClient;
     private MarkerOptions mLocMarker;
+    List<HashMap<String, String>> mVenues = new ArrayList<HashMap<String, String>>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents (Marker marker) {
+                View v = getLayoutInflater().inflate(R.layout.info_window, null);
+                TextView venueName = (TextView) v.findViewById(R.id.venue_name);
+                TextView venueAddress = (TextView) v.findViewById(R.id.venue_address);
+                TextView venueDistance = (TextView) v.findViewById(R.id.venue_distance);
+                TextView venueAppleStock = (TextView) v.findViewById(R.id.venue_apple_stock);
+                TextView venueUSBStock = (TextView) v.findViewById(R.id.venue_usb_stock);
+
+                float[] results = new float[1];
+
+                Integer i = Integer.parseInt(marker.getTitle());
+                LatLng venueLatLng = marker.getPosition();
+                Double distanceToVenue = CalculationByDistance(mLastLatLng, venueLatLng);
+                String stringDistance = String.format("%.1f",distanceToVenue);
+
+                venueName.setText(mVenues.get(i).get("Name"));
+                venueAddress.setText(mVenues.get(i).get("Address"));
+                venueDistance.setText(stringDistance + " km");
+                venueAppleStock.setText("3");
+                venueUSBStock.setText("2");
+
+                return v;
+            }
+
+        });
 
         Log.i(TAG, "Made it into onMapReady() method");
 
@@ -131,22 +169,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         venueRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                List<HashMap<String, String>> venues = new ArrayList<HashMap<String, String>>();
+                mVenues = new ArrayList<HashMap<String, String>>();
                 int i = 0;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    //Typecasting java.util.Object as Collection<Map<String,String>>
+                    //Typecasting java.util.Object as HashMap<String,String>>
                     HashMap<String, String> thisVenue = (HashMap<String, String>) postSnapshot.getValue();
-                    venues.add(i, thisVenue);
+                    mVenues.add(i, thisVenue);
                     i++;
                     Log.i(TAG, "Value is: " + postSnapshot);
                 }
 
-                for (HashMap<String, String> v : venues) {
+                for (HashMap<String, String> v : mVenues) {
 
-                    String name = v.get("Name");
-                    String address = v.get("Address");
+                    final String name = v.get("Name");
+                    final String address = v.get("Address");
                     String city = v.get("City");
                     String category = v.get("Category");
                     Double latitude = Double.parseDouble(v.get("Latitude"));
@@ -154,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String machine = v.get("Machine");
 
                     Log.i(TAG, "Name is " + name + ", Latitude is " + latitude + ", Longitude is " + longitude);
+                    Log.i(TAG, "Array number is " + v);
 
                     String catImage;
                     switch (category) {
@@ -175,7 +212,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     MarkerOptions venueMarker = new MarkerOptions()
                             .position(new LatLng(latitude, longitude))
-                            .title(name)
+                            .title("" + mVenues.indexOf(v))
                             .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier(catImage, "drawable", getPackageName())));
 
                     mMap.addMarker(venueMarker);
@@ -277,6 +314,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (location != null) {
             // TODO: not sure yet
         }
+    }
+
+    public double CalculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius = 6371;
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLon = Math.toRadians(lon2-lon1);
+        double a = Math.sin(dLat/2)*Math.sin(dLat/2)
+                + Math.cos(Math.toRadians(lat1))
+                *Math.cos(Math.toRadians(lat2))
+                *Math.sin(dLon/2)
+                *Math.sin(dLon/2);
+        double c = 2*Math.asin(Math.sqrt(a));
+        double valueResult = Radius*c;
+        double km = valueResult/1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        double meter = valueResult%1000;
+        int meterInDec = Integer.valueOf(newFormat.format(km));
+        Log.i(TAG, "" + valueResult + " km " + kmInDec + " meter " + meterInDec);
+
+        return Radius*c;
     }
 
 }
