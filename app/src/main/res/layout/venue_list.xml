@@ -1,6 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="200dp"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:id="@+id/venue_list_name"
+            android:text="Venue Name"
+            android:layout_marginRight="15dp"
+            android:layout_alignParentLeft="true"
+            android:textColor="#0d3251"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="10 km"
+            android:id="@+id/venue_list_distance"
+            android:layout_toRightOf="@+id/venue_address"
+            android:textColor="#0d3251"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="5dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:id="@+id/apple_image"
+            android:layout_marginRight="3dp"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/apple_logo"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/venue_apple_stock"
+            android:layout_toRightOf="@+id/apple_image"
+            android:layout_marginRight="3dp"
+            android:textColor="#0d3251"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/usb_image"
+            android:layout_toRightOf="@+id/venue_apple_stock"
+            android:layout_marginRight="3dp"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/usb_logo"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="5dp"
+            android:id="@+id/venue_usb_stock"
+            android:layout_toRightOf="@+id/usb_image"
+            android:textColor="#0d3251"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -85,6 +86,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mToggle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        TabHost tabHost = (TabHost) findViewById(android.R.id.tabhost);
+        tabHost.setup();
+
+        TabHost.TabSpec spec1 = tabHost.newTabSpec("Map");
+        spec1.setContent(R.id.mapsTab);
+        spec1.setIndicator("Map");
+        tabHost.addTab(spec1);
+
+        TabHost.TabSpec spec2 = tabHost.newTabSpec("List");
+        spec2.setContent(R.id.venuesTab);
+        spec2.setIndicator("List");
+        tabHost.addTab(spec2);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
