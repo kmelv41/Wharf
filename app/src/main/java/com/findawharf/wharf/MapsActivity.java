@@ -8,6 +8,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -16,8 +17,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -73,6 +78,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleApiClient mGoogleApiClient;
     private MarkerOptions mLocMarker;
     List<HashMap<String, String>> mVenues = new ArrayList<HashMap<String, String>>();
+    ListView venueListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,9 +263,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     mMap.addMarker(venueMarker);
 
+                    /*VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
+
+                    venueListView = (ListView) findViewById(R.id.list);
+
+                    venueListView.setAdapter(adapter);*/
+
                 }
 
                 Log.i(TAG, "Firebase Connected");
+
             }
 
             @Override
@@ -381,4 +394,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return Radius*c;
     }
 
+    /*public class VenueAdapter extends ArrayAdapter {
+
+        private int resource;
+        private LayoutInflater inflater;
+
+        public VenueAdapter(Context context, int resource, List objects) {
+            super(context, resource, objects);
+            this.resource = resource;
+            inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            if(convertView == null) {
+                convertView = inflater.inflate(resource, null);
+            }
+
+            TextView venueName = (TextView) convertView.findViewById(R.id.venue_name);
+            TextView venueAddress = (TextView) convertView.findViewById(R.id.venue_address);
+            TextView venueDistance = (TextView) convertView.findViewById(R.id.venue_distance);
+            TextView venueAppleStock = (TextView) convertView.findViewById(R.id.venue_apple_stock);
+            TextView venueUSBStock = (TextView) convertView.findViewById(R.id.venue_usb_stock);
+
+            Double latitude = Double.parseDouble(mVenues.get(position).get("Latitude"));
+            Double longitude = Double.parseDouble(mVenues.get(position).get("Longitude"));
+
+            LatLng venueLatLng = new LatLng(latitude, longitude);
+            Double distanceToVenue = CalculationByDistance(mLastLatLng, venueLatLng);
+            String stringDistance = String.format("%.1f",distanceToVenue);
+
+            venueName.setText(mVenues.get(position).get("Name"));
+            venueAddress.setText(mVenues.get(position).get("Address"));
+            venueDistance.setText(stringDistance + " km");
+            venueAppleStock.setText("3");
+            venueUSBStock.setText("2");
+
+            return convertView;
+        }
+    }*/
+
 }
+
