@@ -212,7 +212,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
         Log.i(TAG, "Made it into onStart() method");
 
-        venueRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        venueRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mVenues = new ArrayList<HashMap<String, String>>();
@@ -263,11 +263,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     mMap.addMarker(venueMarker);
 
-                    /*VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
+                    VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
 
                     venueListView = (ListView) findViewById(R.id.list);
 
-                    venueListView.setAdapter(adapter);*/
+                    venueListView.setAdapter(adapter);
 
                 }
 
@@ -394,7 +394,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return Radius*c;
     }
 
-    /*public class VenueAdapter extends ArrayAdapter {
+    public class VenueAdapter extends ArrayAdapter {
 
         private int resource;
         private LayoutInflater inflater;
@@ -409,7 +409,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public View getView(int position, View convertView, ViewGroup parent) {
 
             if(convertView == null) {
-                convertView = inflater.inflate(resource, null);
+                convertView = inflater.inflate(R.layout.venue_list, null);
             }
 
             TextView venueName = (TextView) convertView.findViewById(R.id.venue_name);
@@ -433,7 +433,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             return convertView;
         }
-    }*/
+    }
 
 }
 
