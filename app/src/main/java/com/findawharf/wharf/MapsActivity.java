@@ -8,12 +8,22 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -53,8 +63,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mToggle;
     private GoogleMap mMap;
     private static final String TAG = "venueData";
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -66,11 +78,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleApiClient mGoogleApiClient;
     private MarkerOptions mLocMarker;
     List<HashMap<String, String>> mVenues = new ArrayList<HashMap<String, String>>();
+    ListView venueListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
+
+        mDrawerLayout.addDrawerListener(mToggle);
+        mToggle.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        TabHost tabHost = (TabHost) findViewById(android.R.id.tabhost);
+        tabHost.setup();
+
+        TabHost.TabSpec spec1 = tabHost.newTabSpec("Map");
+        spec1.setContent(R.id.mapsTab);
+        spec1.setIndicator("Map");
+        tabHost.addTab(spec1);
+
+        TabHost.TabSpec spec2 = tabHost.newTabSpec("List");
+        spec2.setContent(R.id.venuesTab);
+        spec2.setIndicator("List");
+        tabHost.addTab(spec2);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -82,6 +117,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
                 .addApi(LocationServices.API)
                 .build();
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(mToggle.onOptionsItemSelected(item)){
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
 
     }
 
@@ -166,7 +212,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
         Log.i(TAG, "Made it into onStart() method");
 
-        venueRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        venueRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mVenues = new ArrayList<HashMap<String, String>>();
@@ -217,9 +263,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     mMap.addMarker(venueMarker);
 
+                    VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
+
+                    venueListView = (ListView) findViewById(R.id.list);
+
+                    venueListView.setAdapter(adapter);
+
                 }
 
                 Log.i(TAG, "Firebase Connected");
+
             }
 
             @Override
@@ -341,4 +394,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return Radius*c;
     }
 
+    public class VenueAdapter extends ArrayAdapter {
+
+        private int resource;
+        private LayoutInflater inflater;
+
+        public VenueAdapter(Context context, int resource, List objects) {
+            super(context, resource, objects);
+            this.resource = resource;
+            inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            if(convertView == null) {
+                convertView = inflater.inflate(R.layout.venue_list, null);
+            }
+
+            TextView venueName = (TextView) convertView.findViewById(R.id.venue_name);
+            TextView venueAddress = (TextView) convertView.findViewById(R.id.venue_address);
+            TextView venueDistance = (TextView) convertView.findViewById(R.id.venue_distance);
+            TextView venueAppleStock = (TextView) convertView.findViewById(R.id.venue_apple_stock);
+            TextView venueUSBStock = (TextView) convertView.findViewById(R.id.venue_usb_stock);
+
+            Double latitude = Double.parseDouble(mVenues.get(position).get("Latitude"));
+            Double longitude = Double.parseDouble(mVenues.get(position).get("Longitude"));
+
+            LatLng venueLatLng = new LatLng(latitude, longitude);
+            Double distanceToVenue = CalculationByDistance(mLastLatLng, venueLatLng);
+            String stringDistance = String.format("%.1f",distanceToVenue);
+
+            venueName.setText(mVenues.get(position).get("Name"));
+            venueAddress.setText(mVenues.get(position).get("Address"));
+            venueDistance.setText(stringDistance + " km");
+            venueAppleStock.setText("3");
+            venueUSBStock.setText("2");
+
+            return convertView;
+        }
+    }
+
 }
+
