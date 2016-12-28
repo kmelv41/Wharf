@@ -26,6 +26,8 @@ import android.widget.TextView;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -399,6 +401,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         i++;
                         Log.i(TAG, "Value is: " + postSnapshot);
                     }
+
+                    Collections.sort(mVenues, new Comparator<HashMap<String, String>>() {
+                        @Override
+                        public int compare(HashMap<String, String> dubl1, HashMap<String, String> dubl2) {
+                            return Double.compare(Double.parseDouble(dubl1.get("Distance")), Double.parseDouble(dubl2.get("Distance")));
+                        }
+                    });
+
+                    Log.i(TAG, "Sorted array is: " + mVenues);
 
                     for (HashMap<String, String> v : mVenues) {
 
