@@ -1,6 +1,5 @@
 package com.findawharf.wharf;
 
-import android.*;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -8,9 +7,8 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,18 +24,12 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -51,7 +43,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -212,76 +203,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
         Log.i(TAG, "Made it into onStart() method");
 
-        venueRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mVenues = new ArrayList<HashMap<String, String>>();
-                int i = 0;
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    //Typecasting java.util.Object as HashMap<String,String>>
-                    HashMap<String, String> thisVenue = (HashMap<String, String>) postSnapshot.getValue();
-                    mVenues.add(i, thisVenue);
-                    i++;
-                    Log.i(TAG, "Value is: " + postSnapshot);
-                }
-
-                for (HashMap<String, String> v : mVenues) {
-
-                    final String name = v.get("Name");
-                    final String address = v.get("Address");
-                    String city = v.get("City");
-                    String category = v.get("Category");
-                    Double latitude = Double.parseDouble(v.get("Latitude"));
-                    Double longitude = Double.parseDouble(v.get("Longitude"));
-                    String machine = v.get("Machine");
-
-                    Log.i(TAG, "Name is " + name + ", Latitude is " + latitude + ", Longitude is " + longitude);
-                    Log.i(TAG, "Array number is " + v);
-
-                    String catImage;
-                    switch (category) {
-                        case "Bar":  catImage = "beer";
-                            break;
-                        case "Cafe":  catImage = "cafe";
-                            break;
-                        case "Casino":  catImage = "casino";
-                            break;
-                        case "Hotel":  catImage = "hotel";
-                            break;
-                        case "Restaurant":  catImage = "restaurant";
-                            break;
-                        case "Transit":  catImage = "transit";
-                            break;
-                        default: catImage = "hotel";
-                            break;
-                    }
-
-                    MarkerOptions venueMarker = new MarkerOptions()
-                            .position(new LatLng(latitude, longitude))
-                            .title("" + mVenues.indexOf(v))
-                            .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier(catImage, "drawable", getPackageName())));
-
-                    mMap.addMarker(venueMarker);
-
-                    VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
-
-                    venueListView = (ListView) findViewById(R.id.list);
-
-                    venueListView.setAdapter(adapter);
-
-                }
-
-                Log.i(TAG, "Firebase Connected");
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.i(TAG, "Failed to read value.", error.toException());
-            }
-        });
-
     }
 
     @Override
@@ -298,25 +219,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnected(Bundle connectionHint) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);
-            if (mLastLocation != null) {
-                mLastLatLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                mLocMarker = new MarkerOptions()
-                        .position(mLastLatLng)
-                        .title("Current Location")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
 
-                mMap.addMarker(mLocMarker);
+            new GetLocation().execute();
 
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(mLastLatLng)      // Sets the center of the map to location user
-                        .zoom(17)                   // Sets the zoom
-                        .bearing(0)                // Sets the orientation of the camera to north
-                        .tilt(40)                   // Sets the tilt of the camera to 30 degrees
-                        .build();                   // Creates a CameraPosition from the builder
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
         }
 
         createLocationRequest();
@@ -359,6 +264,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     mGoogleApiClient, mLocationRequest, (LocationListener) this);
         }
+
     }
 
     @Override
@@ -433,6 +339,129 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             return convertView;
         }
+    }
+
+    private class GetLocation extends AsyncTask<Object, Object, Void> {
+
+        @Override
+        protected Void doInBackground(Object... params) {
+
+                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                        mGoogleApiClient);
+                if (mLastLocation != null) {
+                    mLastLatLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                    mLocMarker = new MarkerOptions()
+                            .position(mLastLatLng)
+                            .title("Current Location")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+            if (mLastLocation != null) {
+
+                mMap.addMarker(mLocMarker);
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(mLastLatLng)      // Sets the center of the map to location user
+                        .zoom(17)                   // Sets the zoom
+                        .bearing(0)                // Sets the orientation of the camera to north
+                        .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                        .build();                   // Creates a CameraPosition from the builder
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+            }
+
+            venueRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    mVenues = new ArrayList<HashMap<String, String>>();
+                    int i = 0;
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        //Typecasting java.util.Object as HashMap<String,String>>
+                        HashMap<String, String> thisVenue = (HashMap<String, String>) postSnapshot.getValue();
+                        Double latitude = Double.parseDouble(thisVenue.get("Latitude"));
+                        Double longitude = Double.parseDouble(thisVenue.get("Longitude"));
+
+                        LatLng venueLatLng = new LatLng(latitude,longitude);
+
+                        Double distanceToVenue = CalculationByDistance(mLastLatLng, venueLatLng);
+                        String stringDistance = String.format("%.1f",distanceToVenue);
+
+                        thisVenue.put("Distance",stringDistance);
+
+                        Log.i(TAG, "Array is " + thisVenue);
+
+                        mVenues.add(i, thisVenue);
+                        i++;
+                        Log.i(TAG, "Value is: " + postSnapshot);
+                    }
+
+                    for (HashMap<String, String> v : mVenues) {
+
+                        final String name = v.get("Name");
+                        final String address = v.get("Address");
+                        String city = v.get("City");
+                        String category = v.get("Category");
+                        Double latitude = Double.parseDouble(v.get("Latitude"));
+                        Double longitude = Double.parseDouble(v.get("Longitude"));
+                        String machine = v.get("Machine");
+
+                        Log.i(TAG, "Name is " + name + ", Latitude is " + latitude + ", Longitude is " + longitude);
+                        Log.i(TAG, "Array number is " + v);
+
+                        String catImage;
+                        switch (category) {
+                            case "Bar":  catImage = "beer";
+                                break;
+                            case "Cafe":  catImage = "cafe";
+                                break;
+                            case "Casino":  catImage = "casino";
+                                break;
+                            case "Hotel":  catImage = "hotel";
+                                break;
+                            case "Restaurant":  catImage = "restaurant";
+                                break;
+                            case "Transit":  catImage = "transit";
+                                break;
+                            default: catImage = "hotel";
+                                break;
+                        }
+
+                        MarkerOptions venueMarker = new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .title("" + mVenues.indexOf(v))
+                                .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier(catImage, "drawable", getPackageName())));
+
+                        mMap.addMarker(venueMarker);
+
+                        VenueAdapter adapter = new VenueAdapter(getApplicationContext(), R.layout.venue_list, mVenues);
+
+                        venueListView = (ListView) findViewById(R.id.list);
+
+                        venueListView.setAdapter(adapter);
+
+                    }
+
+                    Log.i(TAG, "Firebase Connected");
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {
+                    // Failed to read value
+                    Log.i(TAG, "Failed to read value.", error.toException());
+                }
+            });
+
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
     }
 
 }
